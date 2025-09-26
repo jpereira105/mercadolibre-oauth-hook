@@ -1,0 +1,4 @@
+.env
+token.json
+verifier.json
+node_modules/
