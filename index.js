@@ -1,63 +1,19 @@
 // en consola npm install express ejs  
-import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import axios from 'axios';
-import dotenv from 'dotenv';
+import { extractItemId } from './utils.js';
+import { getItemData } from './apiClient.js';
+import { scrapeWithPuppeteer } from './puppeteerFallback.js';
 
-dotenv.config();
+const url = "https://departamento.mercadolibre.com.ar/MLA-1413050342-departamentos-semipisos-en-venta-a-estrenar-de-3-ambientes-en-recoleta-gran-categoria-_JM";
+const itemId = extractItemId(url);
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.set('view engine', 'ejs');
-app.set('views', path.join(process.cwd(), 'views'));
-
-// ✅ Ruta de prueba para confirmar que el servidor responde
-app.get('/', (req, res) => {
-  res.send('Servidor activo ✅');
-});
-
-// Ruta del dashboard
-app.get('/dashboard', (req, res) => {
-  try {
-    const tokenData = JSON.parse(fs.readFileSync('./token.json', 'utf-8'));
-    res.render('token', { token: tokenData });
-  } catch (error) {
-    res.status(500).send('Error al leer el token.');
+(async () => {
+  const apiData = await getItemData(itemId);
+  if (apiData) {
+    console.log("📡 Datos desde la API:", apiData);
+    return;
   }
-});
 
-// Ruta para refrescar el token
-app.get('/refresh', async (req, res) => {
-  try {
-    const tokenData = JSON.parse(fs.readFileSync('./token.json', 'utf-8'));
-
-    const response = await axios.post('https://api.mercadolibre.com/oauth/token', null, {
-      params: {
-        grant_type: 'refresh_token',
-        client_id: process.env.CLIENT_ID,
-        client_secret: process.env.CLIENT_SECRET,
-        refresh_token: tokenData.refresh_token
-      },
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
-
-    fs.writeFileSync('token.json', JSON.stringify(response.data, null, 2));
-    res.redirect('/dashboard');
-  } catch (error) {
-    console.error('❌ Error al refrescar el token:', error.response?.data || error.message);
-    res.status(500).send('Error al refrescar el token.');
-  }
-});
-
-// 🔊 Levantar el servidor
-console.log('🟢 Iniciando servidor Express...');
-
-// 🔊 Levantar el servidor
-app.listen(PORT, () => {
-  console.log(`📊 Dashboard corriendo en http://localhost:${PORT}/dashboard`);
-});
-
+  console.log("🔄 API falló, usando fallback...");
+  const fallbackData = await scrapeWithPuppeteer(url);
+  console.log("📦 Datos desde fallback:", fallbackData);
+})();
