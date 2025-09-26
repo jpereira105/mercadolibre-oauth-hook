@@ -13,7 +13,12 @@ const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 app.set('views', path.join(process.cwd(), 'views'));
 
-// Ruta principal del dashboard
+// ✅ Ruta de prueba para confirmar que el servidor responde
+app.get('/', (req, res) => {
+  res.send('Servidor activo ✅');
+});
+
+// Ruta del dashboard
 app.get('/dashboard', (req, res) => {
   try {
     const tokenData = JSON.parse(fs.readFileSync('./token.json', 'utf-8'));
@@ -48,7 +53,8 @@ app.get('/refresh', async (req, res) => {
   }
 });
 
-// Escucha en el puerto
+// 🔊 Levantar el servidor
 app.listen(PORT, () => {
   console.log(`📊 Dashboard corriendo en http://localhost:${PORT}/dashboard`);
 });
+
