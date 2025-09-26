@@ -54,6 +54,9 @@ app.get('/refresh', async (req, res) => {
 });
 
 // 🔊 Levantar el servidor
+console.log('🟢 Iniciando servidor Express...');
+
+// 🔊 Levantar el servidor
 app.listen(PORT, () => {
   console.log(`📊 Dashboard corriendo en http://localhost:${PORT}/dashboard`);
 });
